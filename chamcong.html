@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Chấm Công">
+<title>Chấm Công & Tính Lương</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#f5f5f7;--card:#fff;--border:rgba(0,0,0,0.1);
+  --text:#1c1c1e;--text2:#6c6c70;--text3:#aeaeb2;
+  --blue:#007aff;--green:#34c759;--red:#ff3b30;--input-bg:#f2f2f7;
+}
+body{font-family:-apple-system,'Helvetica Neue',Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:16px;-webkit-font-smoothing:antialiased}
+
+/* Install banner */
+.banner{background:#007aff;color:#fff;padding:11px 16px;display:flex;align-items:center;gap:10px}
+.banner-text{flex:1}
+.banner-title{font-size:13px;font-weight:600}
+.banner-desc{font-size:11px;opacity:.85;margin-top:1px}
+.banner-btn{background:rgba(255,255,255,0.25);border:none;color:#fff;border-radius:8px;padding:6px 11px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap}
+.banner-x{background:none;border:none;color:rgba(255,255,255,.8);font-size:22px;cursor:pointer;line-height:1;padding:0 2px}
+
+/* Modal */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:999;align-items:flex-end}
+.overlay.open{display:flex}
+.modal{background:#fff;border-radius:20px 20px 0 0;padding:22px 20px 44px;width:100%}
+.modal-handle{width:36px;height:4px;background:#d1d1d6;border-radius:2px;margin:0 auto 18px}
+.modal-title{font-size:18px;font-weight:700;margin-bottom:6px}
+.modal-sub{font-size:14px;color:var(--text2);margin-bottom:22px;line-height:1.5}
+.step{display:flex;align-items:flex-start;gap:14px;margin-bottom:16px}
+.step-num{background:#007aff;color:#fff;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;margin-top:1px}
+.step-title{font-size:15px;font-weight:600;color:var(--text)}
+.step-hint{font-size:13px;color:var(--text2);margin-top:3px;line-height:1.5}
+.step-hint b{color:#007aff}
+.modal-btn{width:100%;padding:14px;background:var(--input-bg);border:none;border-radius:12px;font-size:16px;font-weight:600;color:#007aff;cursor:pointer;margin-top:10px;font-family:inherit}
+
+/* Header */
+.header{background:var(--card);border-bottom:.5px solid var(--border);padding:14px 18px 10px;position:sticky;top:0;z-index:10}
+.header h1{font-size:21px;font-weight:700;letter-spacing:-.3px}
+.header p{font-size:12px;color:var(--text2);margin-top:2px}
+
+/* Tab bar */
+.tabs{display:flex;background:var(--card);border-bottom:.5px solid var(--border);position:sticky;top:62px;z-index:9}
+.tab{flex:1;padding:11px 4px 9px;font-size:13px;font-weight:500;color:var(--text2);background:none;border:none;border-bottom:2.5px solid transparent;cursor:pointer;font-family:inherit;transition:all .15s}
+.tab.on{color:#007aff;border-bottom-color:#007aff}
+
+/* Content */
+.content{padding:14px;padding-bottom:50px}
+.pane{display:none}
+.pane.on{display:block}
+
+/* Card */
+.card{background:var(--card);border-radius:14px;overflow:hidden;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,.07)}
+.card-head{padding:13px 16px 10px;border-bottom:.5px solid var(--border);display:flex;align-items:center;gap:8px}
+.card-icon{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px}
+.card-title{font-size:15px;font-weight:600}
+.card-body{padding:14px 16px}
+
+/* Form */
+.fg{margin-bottom:11px}
+.fl{font-size:12px;font-weight:500;color:var(--text2);margin-bottom:5px;display:block;text-transform:uppercase;letter-spacing:.3px}
+.fi{width:100%;background:var(--input-bg);border:none;border-radius:10px;padding:11px 13px;font-size:16px;color:var(--text);font-family:inherit;outline:none;-webkit-appearance:none;appearance:none}
+.fi:focus{background:#e8e8ed;outline:2px solid #007aff;outline-offset:0}
+select.fi{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236c6c70' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center;padding-right:36px}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* Buttons */
+.btn{width:100%;padding:14px;border-radius:12px;border:none;font-size:16px;font-weight:600;cursor:pointer;font-family:inherit;-webkit-appearance:none}
+.btn:active{opacity:.8}
+.btn-blue{background:#007aff;color:#fff}
+.btn-light{background:var(--input-bg);color:#007aff}
+.btn-red{background:none;border:none;color:var(--red);font-size:14px;cursor:pointer;padding:4px 8px;font-family:inherit}
+.save-msg{font-size:13px;min-height:18px;margin-top:8px;color:var(--green);text-align:center}
+
+/* Job list */
+.job-row{display:flex;align-items:center;padding:12px 16px;border-bottom:.5px solid var(--border)}
+.job-row:last-child{border-bottom:none}
+.dot{border-radius:50%;flex-shrink:0}
+.job-info{flex:1;margin-left:11px}
+.job-name{font-size:15px;font-weight:500}
+.job-wage{font-size:13px;color:var(--text2);margin-top:2px}
+
+/* Log list */
+.log-row{display:flex;align-items:center;padding:11px 16px;border-bottom:.5px solid var(--border)}
+.log-row:last-child{border-bottom:none}
+.log-info{flex:1;margin-left:10px;min-width:0}
+.log-place{font-size:14px;font-weight:500}
+.log-date{font-size:12px;color:var(--text2);margin-top:2px}
+.log-right{text-align:right;flex-shrink:0}
+.log-pay{font-size:15px;font-weight:600;color:var(--green)}
+.log-hrs{font-size:12px;color:var(--text2);margin-top:1px}
+
+/* Summary */
+.stat-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.stat{background:var(--input-bg);border-radius:12px;padding:14px 12px;text-align:center}
+.stat-val{font-size:20px;font-weight:700;letter-spacing:-.5px}
+.stat-lbl{font-size:11px;color:var(--text2);margin-top:3px;font-weight:500}
+.month-nav{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:.5px solid var(--border)}
+.mnav-btn{background:var(--input-bg);border:none;border-radius:8px;width:34px;height:34px;font-size:22px;color:#007aff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit}
+.month-lbl{font-size:16px;font-weight:600}
+.job-sum-row{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;border-bottom:.5px solid var(--border)}
+.job-sum-row:last-child{border-bottom:none}
+.job-sum-left{display:flex;align-items:center;gap:10px}
+.job-sum-name{font-size:14px;font-weight:500}
+.job-sum-hrs{font-size:12px;color:var(--text2)}
+.job-sum-pay{font-size:15px;font-weight:600;color:var(--green)}
+.sec-lbl{font-size:12px;font-weight:500;color:var(--text2);padding:8px 16px 4px;text-transform:uppercase;letter-spacing:.4px}
+
+/* Add section */
+.add-sec{padding:14px 16px;border-top:.5px solid var(--border);background:#fafafa}
+.add-sec-title{font-size:12px;font-weight:600;color:var(--text2);margin-bottom:10px;text-transform:uppercase;letter-spacing:.3px}
+.empty{text-align:center;color:var(--text3);font-size:14px;padding:24px 16px}
+</style>
+</head>
+<body>
+
+<!-- Install banner -->
+<div id="banner" class="banner">
+  <span style="font-size:22px">📲</span>
+  <div class="banner-text">
+    <div class="banner-title">Thêm vào màn hình chính</div>
+    <div class="banner-desc">Dùng như app thật, không cần mạng</div>
+  </div>
+  <button class="banner-btn" onclick="document.getElementById('overlay').classList.add('open')">Cách làm</button>
+  <button class="banner-x" onclick="document.getElementById('banner').style.display='none'">×</button>
+</div>
+
+<!-- Install modal -->
+<div class="overlay" id="overlay" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">📲 Thêm vào màn hình chính</div>
+    <div class="modal-sub">Làm 3 bước trong Safari — chỉ mất 10 giây!</div>
+    <div class="step">
+      <div class="step-num">1</div>
+      <div>
+        <div class="step-title">Bấm nút Chia sẻ <b style="color:#007aff">□↑</b></div>
+        <div class="step-hint">Nút ở thanh <b>dưới cùng</b> Safari — hình vuông có mũi tên lên</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div>
+        <div class="step-title">Chọn "Thêm vào màn hình chính"</div>
+        <div class="step-hint">Kéo xuống danh sách → tìm <b>「ホーム画面に追加」</b></div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div>
+        <div class="step-title">Bấm <b style="color:#007aff">追加</b> góc trên phải</div>
+        <div class="step-hint">Icon app xuất hiện trên màn hình chính!</div>
+      </div>
+    </div>
+    <button class="modal-btn" onclick="document.getElementById('overlay').classList.remove('open')">Đã hiểu, đóng lại</button>
+  </div>
+</div>
+
+<!-- Header -->
+<div class="header">
+  <h1>📋 Chấm Công</h1>
+  <p>Ghi giờ làm · Tính lương tự động</p>
+</div>
+
+<!-- Tab bar -->
+<div class="tabs">
+  <button class="tab on" id="tab-log" onclick="goTab('log')">Nhập giờ</button>
+  <button class="tab" id="tab-summary" onclick="goTab('summary')">Tổng kết</button>
+  <button class="tab" id="tab-jobs" onclick="goTab('jobs')">Nơi làm</button>
+</div>
+
+<div class="content">
+
+  <!-- NHẬP GIỜ -->
+  <div class="pane on" id="pane-log">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-icon" style="background:#e8f4ff">⏱️</div>
+        <span class="card-title">Ghi giờ làm</span>
+      </div>
+      <div class="card-body">
+        <div class="frow">
+          <div class="fg"><label class="fl">Ngày</label><input type="date" id="log-date" class="fi"></div>
+          <div class="fg"><label class="fl">Nơi làm</label><select id="log-job" class="fi"></select></div>
+        </div>
+        <div class="frow">
+          <div class="fg"><label class="fl">Giờ thường</label><input type="number" id="log-hours" class="fi" placeholder="0" min="0" max="24" step="0.5"></div>
+          <div class="fg"><label class="fl">Giờ tăng ca</label><input type="number" id="log-overtime" class="fi" placeholder="0" min="0" max="24" step="0.5" value="0"></div>
+        </div>
+        <div class="fg"><label class="fl">Ghi chú</label><input type="text" id="log-note" class="fi" placeholder="VD: cuối tuần, nghỉ bù..."></div>
+        <button class="btn btn-blue" onclick="addLog()">Lưu ngày làm</button>
+        <div class="save-msg" id="log-msg"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <div class="card-icon" style="background:#e8ffe8">📅</div>
+        <span class="card-title">Lịch sử gần đây</span>
+      </div>
+      <div id="recent-log"><div class="empty">Chưa có dữ liệu</div></div>
+    </div>
+  </div>
+
+  <!-- TỔNG KẾT -->
+  <div class="pane" id="pane-summary">
+    <div class="card">
+      <div class="month-nav">
+        <button class="mnav-btn" onclick="changeMonth(-1)">‹</button>
+        <span class="month-lbl" id="month-label"></span>
+        <button class="mnav-btn" onclick="changeMonth(1)">›</button>
+      </div>
+      <div class="card-body">
+        <div class="stat-row">
+          <div class="stat"><div class="stat-val" id="sum-hours">0h</div><div class="stat-lbl">Tổng giờ làm</div></div>
+          <div class="stat"><div class="stat-val" id="sum-pay">¥0</div><div class="stat-lbl">Tổng thu nhập</div></div>
+        </div>
+      </div>
+      <div class="sec-lbl">Theo nơi làm</div>
+      <div id="sum-by-job"></div>
+      <div class="sec-lbl" style="margin-top:6px">Chi tiết từng ngày</div>
+      <div id="month-log"></div>
+    </div>
+  </div>
+
+  <!-- NƠI LÀM -->
+  <div class="pane" id="pane-jobs">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-icon" style="background:#f3e8ff">💼</div>
+        <span class="card-title">Nơi làm việc</span>
+      </div>
+      <div id="job-list"></div>
+      <div class="add-sec">
+        <div class="add-sec-title">+ Thêm nơi làm mới</div>
+        <div class="frow">
+          <div class="fg"><label class="fl">Tên nơi làm</label><input type="text" id="new-job-name" class="fi" placeholder="VD: Nhà hàng A"></div>
+          <div class="fg"><label class="fl">Lương/giờ (¥)</label><input type="number" id="new-job-wage" class="fi" placeholder="1200" min="0" step="50"></div>
+        </div>
+        <div class="fg"><label class="fl">Lương tăng ca/giờ (¥) — bỏ trống = tự tính 125%</label><input type="number" id="new-job-ot" class="fi" placeholder="Tự động = lương × 1.25"></div>
+        <button class="btn btn-light" onclick="addJob()">+ Thêm nơi làm</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const COLORS = ['#007aff','#34c759','#ff9500','#ff3b30','#5856d6','#30b0c7'];
+let jobs = JSON.parse(localStorage.getItem('cc_jobs') || '[]');
+let logs = JSON.parse(localStorage.getItem('cc_logs') || '[]');
+let viewMonth = new Date().getMonth();
+let viewYear  = new Date().getFullYear();
+
+if (!jobs.length) {
+  jobs = [
+    {id:1, name:'Nơi làm 1', wage:1200, ot:1500,  color:COLORS[0]},
+    {id:2, name:'Nơi làm 2', wage:1500, ot:1875, color:COLORS[1]},
+  ];
+  save();
+}
+
+function save() {
+  try {
+    localStorage.setItem('cc_jobs', JSON.stringify(jobs));
+    localStorage.setItem('cc_logs', JSON.stringify(logs));
+  } catch(e) {}
+}
+
+function fmt(n) { return '¥' + Math.round(n).toLocaleString('ja-JP'); }
+
+// ---- TAB SWITCHING ----
+function goTab(t) {
+  ['log','summary','jobs'].forEach(id => {
+    document.getElementById('pane-' + id).className = 'pane' + (id === t ? ' on' : '');
+    document.getElementById('tab-' + id).className  = 'tab'  + (id === t ? ' on' : '');
+  });
+  if (t === 'log')     { fillJobSelect(); renderRecent(); }
+  if (t === 'summary') renderSummary();
+  if (t === 'jobs')    renderJobs();
+}
+
+// ---- JOBS ----
+function renderJobs() {
+  const el = document.getElementById('job-list');
+  if (!jobs.length) { el.innerHTML = '<div class="empty">Chưa có nơi làm nào</div>'; return; }
+  el.innerHTML = jobs.map(j => `
+    <div class="job-row">
+      <span class="dot" style="width:12px;height:12px;background:${j.color}"></span>
+      <div class="job-info">
+        <div class="job-name">${j.name}</div>
+        <div class="job-wage">Thường: ${j.wage.toLocaleString('ja-JP')}¥ · Tăng ca: ${Math.round(j.ot).toLocaleString('ja-JP')}¥</div>
+      </div>
+      <button class="btn-red" onclick="delJob(${j.id})">Xóa</button>
+    </div>
+  `).join('');
+}
+
+function addJob() {
+  const name = document.getElementById('new-job-name').value.trim();
+  const wage = +document.getElementById('new-job-wage').value;
+  const otRaw = document.getElementById('new-job-ot').value;
+  if (!name || !wage) return;
+  jobs.push({ id: Date.now(), name, wage, ot: otRaw ? +otRaw : wage * 1.25, color: COLORS[jobs.length % COLORS.length] });
+  document.getElementById('new-job-name').value = '';
+  document.getElementById('new-job-wage').value = '';
+  document.getElementById('new-job-ot').value   = '';
+  save(); renderJobs();
+}
+
+function delJob(id) {
+  if (!confirm('Xóa nơi làm này?')) return;
+  jobs = jobs.filter(j => j.id !== id);
+  save(); renderJobs();
+}
+
+// ---- LOG ----
+function fillJobSelect() {
+  document.getElementById('log-job').innerHTML = jobs.map(j =>
+    `<option value="${j.id}">${j.name}</option>`
+  ).join('');
+}
+
+function addLog() {
+  const date = document.getElementById('log-date').value;
+  const jobId = +document.getElementById('log-job').value;
+  const hours = +document.getElementById('log-hours').value || 0;
+  const overtime = +document.getElementById('log-overtime').value || 0;
+  const note = document.getElementById('log-note').value.trim();
+  if (!date || !jobId || (hours === 0 && overtime === 0)) return;
+  const job = jobs.find(j => j.id === jobId);
+  if (!job) return;
+  const pay = hours * job.wage + overtime * job.ot;
+  logs.push({ id: Date.now(), date, jobId, jobName: job.name, hours, overtime, pay, note, color: job.color });
+  logs.sort((a, b) => b.date.localeCompare(a.date));
+  document.getElementById('log-hours').value   = '';
+  document.getElementById('log-overtime').value = '0';
+  document.getElementById('log-note').value    = '';
+  const msg = document.getElementById('log-msg');
+  msg.textContent = `✓ Đã lưu: ${hours}h + ${overtime}h TC = ${fmt(pay)}`;
+  setTimeout(() => msg.textContent = '', 4000);
+  save(); renderRecent();
+}
+
+function renderRecent() {
+  const el = document.getElementById('recent-log');
+  const list = logs.slice(0, 12);
+  if (!list.length) { el.innerHTML = '<div class="empty">Chưa có dữ liệu</div>'; return; }
+  el.innerHTML = list.map(l => `
+    <div class="log-row">
+      <span class="dot" style="width:10px;height:10px;background:${l.color}"></span>
+      <div class="log-info">
+        <div class="log-place">${l.jobName}</div>
+        <div class="log-date">${l.date}${l.note ? ' · ' + l.note : ''}</div>
+      </div>
+      <div class="log-right">
+        <div class="log-pay">${fmt(l.pay)}</div>
+        <div class="log-hrs">${(l.hours + (l.overtime||0)).toFixed(1)}h</div>
+      </div>
+      <button class="btn-red" style="margin-left:6px" onclick="delLog(${l.id})">×</button>
+    </div>
+  `).join('');
+}
+
+function delLog(id) {
+  logs = logs.filter(l => l.id !== id);
+  save(); renderRecent();
+  if (document.getElementById('pane-summary').classList.contains('on')) renderSummary();
+}
+
+// ---- SUMMARY ----
+function changeMonth(d) {
+  viewMonth += d;
+  if (viewMonth > 11) { viewMonth = 0; viewYear++; }
+  if (viewMonth < 0)  { viewMonth = 11; viewYear--; }
+  renderSummary();
+}
+
+function renderSummary() {
+  document.getElementById('month-label').textContent =
+    new Date(viewYear, viewMonth, 1).toLocaleDateString('ja-JP', { year:'numeric', month:'long' });
+
+  const ml = logs.filter(l => {
+    const d = new Date(l.date);
+    return d.getMonth() === viewMonth && d.getFullYear() === viewYear;
+  });
+
+  const totalH = ml.reduce((s, l) => s + l.hours + (l.overtime||0), 0);
+  const totalP = ml.reduce((s, l) => s + l.pay, 0);
+  document.getElementById('sum-hours').textContent = totalH.toFixed(1) + 'h';
+  document.getElementById('sum-pay').textContent   = fmt(totalP);
+
+  const byJob = {};
+  ml.forEach(l => {
+    if (!byJob[l.jobId]) byJob[l.jobId] = { name: l.jobName, h: 0, ot: 0, pay: 0, color: l.color };
+    byJob[l.jobId].h   += l.hours;
+    byJob[l.jobId].ot  += (l.overtime||0);
+    byJob[l.jobId].pay += l.pay;
+  });
+
+  const sumEl = document.getElementById('sum-by-job');
+  if (!Object.keys(byJob).length) {
+    sumEl.innerHTML = '<div class="empty">Không có dữ liệu tháng này</div>';
+  } else {
+    sumEl.innerHTML = Object.values(byJob).map(j => `
+      <div class="job-sum-row">
+        <div class="job-sum-left">
+          <span class="dot" style="width:10px;height:10px;background:${j.color}"></span>
+          <div>
+            <div class="job-sum-name">${j.name}</div>
+            <div class="job-sum-hrs">${(j.h+j.ot).toFixed(1)}h (${j.h}h + ${j.ot}h TC)</div>
+          </div>
+        </div>
+        <div class="job-sum-pay">${fmt(j.pay)}</div>
+      </div>
+    `).join('');
+  }
+
+  const logEl = document.getElementById('month-log');
+  if (!ml.length) { logEl.innerHTML = ''; return; }
+  logEl.innerHTML = ml.map(l => `
+    <div class="log-row">
+      <span class="dot" style="width:10px;height:10px;background:${l.color}"></span>
+      <div class="log-info">
+        <div class="log-place">${l.jobName}</div>
+        <div class="log-date">${l.date}${l.note ? ' · ' + l.note : ''}</div>
+      </div>
+      <div class="log-right">
+        <div class="log-pay">${fmt(l.pay)}</div>
+        <div class="log-hrs">${(l.hours+(l.overtime||0)).toFixed(1)}h</div>
+      </div>
+      <button class="btn-red" style="margin-left:6px" onclick="delLog(${l.id})">×</button>
+    </div>
+  `).join('');
+}
+
+// ---- INIT ----
+document.getElementById('log-date').value = new Date().toISOString().split('T')[0];
+fillJobSelect();
+renderRecent();
+renderJobs();
+</script>
+</body>
+</html>
